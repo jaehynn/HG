@@ -18,13 +18,21 @@ const state = {
 // DOM Elements
 const screenHome = document.getElementById('screen-home');
 const screenPlay = document.getElementById('screen-play');
-const modeCards = document.querySelectorAll('.mode-card');
-const btnStart = document.getElementById('btn-start');
 const btnBackHome = document.getElementById('btn-back-home');
 const btnReset = document.getElementById('btn-reset');
 const cardView = document.getElementById('card-view');
 const rouletteView = document.getElementById('roulette-view');
 const cardGrid = document.getElementById('card-grid');
+
+// Game Selection Elements
+const btnSelectHeartGame = document.getElementById('btn-select-heart-game');
+const btnSelectRouletteGame = document.getElementById('btn-select-roulette-game');
+
+// Heart Game Option Modal Elements
+const heartOptionModal = document.getElementById('heart-option-modal');
+const btnOpt5x5 = document.getElementById('btn-opt-5x5');
+const btnOpt4x4 = document.getElementById('btn-opt-4x4');
+const btnCancelHeartOption = document.getElementById('btn-cancel-heart-option');
 
 // Player Setup Elements
 const btnOpenPlayerModal = document.getElementById('btn-open-player-modal');
@@ -64,17 +72,35 @@ const HEART_SVG = `
 
 // Initialize App
 function init() {
-  // Mode Selection in Home
-  modeCards.forEach(card => {
-    card.addEventListener('click', () => {
-      modeCards.forEach(c => c.classList.remove('active'));
-      card.classList.add('active');
-      state.selectedMode = card.getAttribute('data-mode');
-    });
+  // 1. Home Game Selection
+  // Click Heart Game -> Open 5x5 / 4x4 Option Modal
+  btnSelectHeartGame.addEventListener('click', () => {
+    heartOptionModal.classList.add('active');
+  });
+
+  btnOpt5x5.addEventListener('click', () => {
+    state.selectedMode = '5x5';
+    heartOptionModal.classList.remove('active');
+    startGame();
+  });
+
+  btnOpt4x4.addEventListener('click', () => {
+    state.selectedMode = '4x4';
+    heartOptionModal.classList.remove('active');
+    startGame();
+  });
+
+  btnCancelHeartOption.addEventListener('click', () => {
+    heartOptionModal.classList.remove('active');
+  });
+
+  // Click Roulette Game -> Start Directly
+  btnSelectRouletteGame.addEventListener('click', () => {
+    state.selectedMode = 'roulette';
+    startGame();
   });
 
   // Navigation
-  btnStart.addEventListener('click', startGame);
   btnBackHome.addEventListener('click', () => {
     stopCardWiggleLoop();
     switchScreen('home');
@@ -127,6 +153,7 @@ function switchScreen(screenName) {
     screenPlay.classList.remove('active');
     screenHome.classList.add('active');
     closeResultModal();
+    heartOptionModal.classList.remove('active');
   } else {
     screenHome.classList.remove('active');
     screenPlay.classList.add('active');
@@ -148,7 +175,7 @@ function resetCurrentGame() {
   stopCardWiggleLoop();
 
   if (state.selectedMode === 'roulette') {
-    gameTopTitle.textContent = 'Minimal Roulette';
+    gameTopTitle.textContent = '룰렛 게임';
     cardView.style.display = 'none';
     rouletteView.style.display = 'flex';
     turnSection.style.display = 'none';
@@ -157,7 +184,7 @@ function resetCurrentGame() {
     drawRoulette();
   } else {
     const is5x5 = state.selectedMode === '5x5';
-    gameTopTitle.textContent = is5x5 ? '5x5 Card Game' : '4x4 Card Game';
+    gameTopTitle.textContent = is5x5 ? '하트 게임 (5x5)' : '하트 게임 (4x4)';
     cardView.style.display = 'flex';
     rouletteView.style.display = 'none';
     turnSection.style.display = 'block';
@@ -219,7 +246,7 @@ function handleCardClick(card, index) {
 
     const winnerName = state.currentPlayer === 1 ? state.player1Name : state.player2Name;
     setTimeout(() => {
-      showWinnerModal(winnerName);
+      showWinnerModal(winnerName, 'heart');
       state.isProcessing = false;
     }, 650);
   } else {
@@ -245,12 +272,10 @@ function startCardWiggleLoop() {
     // Get all cards that haven't disappeared yet
     const activeCards = Array.from(cardGrid.querySelectorAll('.card-item:not(.disappeared):not(.revealed-heart)'));
     if (activeCards.length > 0) {
-      // Pick 1 random card
       const randomIndex = Math.floor(Math.random() * activeCards.length);
       const targetCard = activeCards[randomIndex];
 
       targetCard.classList.remove('wiggling');
-      // Trigger reflow to restart css animation
       void targetCard.offsetWidth;
       targetCard.classList.add('wiggling');
 
@@ -259,12 +284,10 @@ function startCardWiggleLoop() {
       }, { once: true });
     }
 
-    // Random delay between 1.2s to 3.2s
     const nextInterval = 1200 + Math.random() * 2000;
     state.wiggleTimerId = setTimeout(triggerNextWiggle, nextInterval);
   }
 
-  // Initial delay
   state.wiggleTimerId = setTimeout(triggerNextWiggle, 1500);
 }
 
@@ -278,9 +301,14 @@ function stopCardWiggleLoop() {
 }
 
 // Show Winner Modal
-function showWinnerModal(winnerName) {
-  modalWinnerTitle.textContent = `${winnerName} 당첨!`;
-  modalWinnerDesc.textContent = `축하합니다! 단 하나의 하트를 찾았습니다.`;
+function showWinnerModal(winnerName, gameType = 'heart') {
+  if (gameType === 'roulette') {
+    modalWinnerTitle.textContent = `${winnerName} 당첨!`;
+    modalWinnerDesc.textContent = `축하합니다! 룰렛의 선택이 결정되었습니다.`;
+  } else {
+    modalWinnerTitle.textContent = `${winnerName} 승리!`;
+    modalWinnerDesc.textContent = `축하합니다! 단 하나의 하트를 찾았습니다.`;
+  }
   resultModal.classList.add('active');
 }
 
@@ -362,7 +390,6 @@ function spinRoulette() {
     const elapsed = now - startTime;
     const progress = Math.min(elapsed / duration, 1);
     
-    // Ease-out cubic
     const ease = 1 - Math.pow(1 - progress, 3);
     state.rouletteAngle = startAngle + totalRadian * ease;
     drawRoulette();
@@ -379,7 +406,7 @@ function spinRoulette() {
       const winningIndex = Math.floor(normalized / arc);
       const winner = state.rouletteItems[winningIndex];
 
-      showWinnerModal(winner);
+      showWinnerModal(winner, 'roulette');
     }
   }
 

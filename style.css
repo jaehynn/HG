@@ -47,17 +47,17 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Screen 1: Home View */
+/* Screen 1: Home View Header */
 .home-header {
-  padding-top: 32px;
-  padding-bottom: 20px;
+  padding-top: 24px;
+  padding-bottom: 16px;
   text-align: center;
 }
 
 .heart-brand-icon {
   color: var(--color-accent-heart);
   display: inline-flex;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   animation: floatHeart 2.4s ease-in-out infinite;
 }
 
@@ -71,7 +71,7 @@ body {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--color-text-main);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .brand-subtitle {
@@ -85,129 +85,203 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: 20px;
   padding: 8px 0;
 }
 
-/* Player Edit Button on Home */
-.btn-player-edit {
+/* 1. Prominent Player Setup Card (Induces first-step name setting) */
+.player-setup-card {
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: 20px;
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 4px 14px rgba(60, 50, 40, 0.04);
+}
+
+.player-setup-card:active {
+  transform: scale(0.98);
+  background-color: #FAF8F5;
+  border-color: #DDD4C7;
+}
+
+.player-setup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: var(--color-bg-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-btn);
-  padding: 14px 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+  margin-bottom: 12px;
 }
 
-.btn-player-edit:active {
-  transform: scale(0.98);
-  background-color: #F8F6F2;
-}
-
-.player-names-preview {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--color-text-main);
-}
-
-.p-vs {
+.player-setup-tag {
   font-size: 11px;
   font-weight: 700;
   color: var(--color-text-sub);
-  background: var(--color-bg-base);
-  padding: 2px 6px;
-  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
-.p-name.p1-label {
-  color: var(--color-accent-heart);
-}
-
-.p-name.p2-label {
-  color: var(--color-text-main);
-}
-
-.btn-edit-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.player-setup-action {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-sub);
+  color: var(--color-accent-heart);
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
-.mode-selector-label {
+.player-names-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.player-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-bg-base);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.p1-pill .pill-dot {
+  background-color: var(--color-accent-heart);
+}
+
+.p2-pill .pill-dot {
+  background-color: var(--color-text-main);
+}
+
+.pill-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vs-text {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-text-sub);
+  letter-spacing: 0.05em;
+}
+
+.player-setup-hint {
+  font-size: 11px;
+  color: var(--color-text-sub);
+  text-align: center;
+  margin-top: 2px;
+}
+
+/* 2. Game Selection (Square Cards with 3D Icons) */
+.game-select-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-title {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-sub);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding-left: 2px;
 }
 
-.mode-options {
+.game-square-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  width: 100%;
+}
+
+.game-square-card {
+  background: var(--color-bg-surface);
+  border: 1.5px solid var(--color-border-subtle);
+  border-radius: 22px;
+  aspect-ratio: 1 / 1;
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.mode-card {
-  background: var(--color-bg-surface);
-  border: 2px solid transparent;
-  border-radius: var(--radius-btn);
-  padding: 16px 18px;
-  text-align: left;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
-}
-
-.mode-card:active {
-  transform: scale(0.98);
-}
-
-.mode-card.active {
-  border-color: var(--color-text-main);
-  background: #FFFFFF;
-  box-shadow: 0 4px 12px rgba(45, 42, 38, 0.08);
-}
-
-.mode-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.2, 0, 0, 1);
+  box-shadow: 0 4px 12px rgba(60, 50, 40, 0.04);
+  position: relative;
+  text-align: center;
 }
 
-.mode-name {
+.game-square-card:hover {
+  transform: translateY(-2px);
+  border-color: #D3C9BC;
+  box-shadow: 0 8px 20px rgba(60, 50, 40, 0.08);
+}
+
+.game-square-card:active {
+  transform: scale(0.96);
+  background-color: #FAF8F5;
+}
+
+/* 3D Icon Presentation */
+.game-icon-3d {
+  width: 58px;
+  height: 58px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s ease;
+}
+
+.game-square-card:hover .game-icon-3d {
+  transform: scale(1.08) rotate(-2deg);
+}
+
+.icon-3d-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.game-card-title {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-text-main);
+  letter-spacing: -0.01em;
 }
 
-.mode-tag {
+.game-card-sub {
   font-size: 11px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 10px;
-  background-color: var(--color-bg-base);
   color: var(--color-text-sub);
 }
 
-.mode-card.active .mode-tag {
-  background-color: var(--color-text-main);
-  color: #FFFFFF;
-}
-
-.mode-desc {
-  font-size: 13px;
+.game-card-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background-color: var(--color-bg-base);
   color: var(--color-text-sub);
 }
 
@@ -221,7 +295,6 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
-  margin-top: 4px;
 }
 
 .btn-primary:active {
@@ -288,7 +361,7 @@ body {
 /* Turn Section (Standalone, Larger & Minimal Section above Card UI) */
 .turn-section {
   width: 100%;
-  margin: 8px 0 28px; /* Clean generous spacing from cards */
+  margin: 6px 0 24px;
 }
 
 .turn-card-banner {
@@ -400,7 +473,7 @@ body {
 .card-item {
   background-color: var(--color-card-base);
   border-radius: var(--radius-card);
-  corner-shape: squircle; /* Modern CSS standard corner-shape */
+  corner-shape: squircle;
   aspect-ratio: 1 / 1;
   cursor: pointer;
   box-shadow: var(--shadow-card);
@@ -548,6 +621,67 @@ body {
   max-width: 320px;
 }
 
+/* Heart Game Option Modal Styles */
+.modal-option-icon {
+  margin-bottom: 12px;
+}
+
+.option-button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.btn-grid-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-bg-base);
+  border: 1.5px solid transparent;
+  border-radius: 16px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.btn-grid-option:hover {
+  background: #FFFFFF;
+  border-color: var(--color-text-main);
+  box-shadow: 0 4px 12px rgba(45, 42, 38, 0.08);
+}
+
+.btn-grid-option:active {
+  transform: scale(0.98);
+}
+
+.opt-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.opt-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.opt-desc {
+  font-size: 12px;
+  color: var(--color-text-sub);
+}
+
+.opt-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--color-text-main);
+  color: #FFFFFF;
+}
+
 /* Player Settings Input Group in Modal */
 .player-input-group {
   display: flex;
@@ -613,7 +747,7 @@ body {
   max-width: 340px;
   background-color: var(--color-bg-surface);
   border-radius: var(--radius-modal);
-  padding: 30px 24px 22px;
+  padding: 28px 22px 22px;
   text-align: center;
   box-shadow: var(--shadow-modal);
   transform: translateY(20px) scale(0.96);
@@ -626,7 +760,7 @@ body {
 
 .modal-heart-icon {
   color: var(--color-accent-heart);
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   animation: heartBounce 0.6s var(--ease-spring) infinite alternate;
 }
 
@@ -645,7 +779,7 @@ body {
 .modal-desc {
   font-size: var(--font-size-body);
   color: var(--color-text-sub);
-  margin-bottom: 24px;
+  margin-bottom: 22px;
   line-height: 1.4;
 }
 
