@@ -18,6 +18,7 @@ const state = {
 // DOM Elements
 const screenHome = document.getElementById('screen-home');
 const screenPlay = document.getElementById('screen-play');
+const appContainer = document.querySelector('.app-container');
 const btnBackHome = document.getElementById('btn-back-home');
 const btnReset = document.getElementById('btn-reset');
 const cardView = document.getElementById('card-view');
@@ -33,6 +34,11 @@ const heartOptionModal = document.getElementById('heart-option-modal');
 const btnOpt5x5 = document.getElementById('btn-opt-5x5');
 const btnOpt4x4 = document.getElementById('btn-opt-4x4');
 const btnCancelHeartOption = document.getElementById('btn-cancel-heart-option');
+
+// Reset Confirm Modal Elements
+const resetConfirmModal = document.getElementById('reset-confirm-modal');
+const btnConfirmResetYes = document.getElementById('btn-confirm-reset-yes');
+const btnConfirmResetNo = document.getElementById('btn-confirm-reset-no');
 
 // Player Setup Elements
 const btnOpenPlayerModal = document.getElementById('btn-open-player-modal');
@@ -70,11 +76,11 @@ const HEART_SVG = `
   </svg>
 `;
 
-// Hybrid Haptic Engine (Android Vibration + iOS Switch Taptic + Web Audio Sub-bass Pulse)
+// Hybrid Haptic & Audio Engine
 let audioCtx = null;
 const iosHapticSwitch = document.getElementById('ios-haptic-trigger');
 
-function getAudioContext() {
+function initAudioContext() {
   if (!audioCtx) {
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (AudioContextClass) {
@@ -84,59 +90,63 @@ function getAudioContext() {
   if (audioCtx && audioCtx.state === 'suspended') {
     audioCtx.resume();
   }
-  return audioCtx;
 }
 
-// Low-frequency Sub-bass Sound Pulse that causes physical speaker resonance/haptic sensation
-function playTactileAudioPulse(type = 'light') {
+// Crisp & Tactile Web Audio Click (Clearly audible on speakers when volume is on)
+function playTactileSound(type = 'light') {
   try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
+    initAudioContext();
+    if (!audioCtx) return;
 
     if (type === 'light') {
-      // 55Hz short crisp pop pulse (feels like a mechanical click)
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      // Mechanical snappy click & tactile pop sound (High clarity, resonant frequency)
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
 
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(58, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(24, ctx.currentTime + 0.045);
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.05);
 
-      gain.gain.setValueAtTime(0.7, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+      gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(audioCtx.destination);
 
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.046);
+      osc.start(audioCtx.currentTime);
+      osc.stop(audioCtx.currentTime + 0.052);
     } else if (type === 'strong-win') {
-      // Triple pulsing resonance wave for grand celebration
-      [0, 0.12, 0.28].forEach((delay, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+      // Celebratory fan-fare chime + power bass drops
+      const notes = [
+        { freq: 440, delay: 0 },
+        { freq: 554.37, delay: 0.1 },
+        { freq: 659.25, delay: 0.2 },
+        { freq: 880, delay: 0.32 }
+      ];
 
-        osc.type = 'triangle';
-        const startFreq = idx === 2 ? 80 : 65;
-        osc.frequency.setValueAtTime(startFreq, ctx.currentTime + delay);
-        osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + delay + 0.12);
+      notes.forEach(({ freq, delay }) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
 
-        gain.gain.setValueAtTime(0.85, ctx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.13);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+
+        gain.gain.setValueAtTime(0.4, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.35);
 
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(audioCtx.destination);
 
-        osc.start(ctx.currentTime + delay);
-        osc.stop(ctx.currentTime + delay + 0.14);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + 0.36);
       });
     }
   } catch (err) {
-    // Audio context play error handled silently
+    // Silently continue if audio error occurs
   }
 }
 
-// Master Hybrid Haptic Trigger
+// Master Haptic Trigger (Visual Haptic + Android Vibrate + iOS Switch + Web Audio)
 function triggerHaptic(type = 'light') {
   // 1. Android standard vibration API
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -156,14 +166,33 @@ function triggerHaptic(type = 'light') {
     } catch (e) {}
   }
 
-  // 3. Web Audio Sub-bass tactile vibration (works on iOS, Safari, Kakao, Naver in-app)
-  playTactileAudioPulse(type);
+  // 3. Web Audio Crisp Tactile Sound
+  playTactileSound(type);
+}
+
+// Trigger Visual Haptic Bounce on Card Grid
+function triggerVisualHaptic() {
+  if (!cardGrid) return;
+  cardGrid.classList.remove('impact-bounce');
+  void cardGrid.offsetWidth; // Force reflow
+  cardGrid.classList.add('impact-bounce');
+}
+
+// Trigger Big Win Visual Haptic on Screen
+function triggerWinVisualHaptic() {
+  if (!appContainer) return;
+  appContainer.classList.remove('win-shake');
+  void appContainer.offsetWidth;
+  appContainer.classList.add('win-shake');
 }
 
 // Initialize App
 function init() {
+  // Unlock audio on first touch interaction
+  document.addEventListener('touchstart', initAudioContext, { once: true, passive: true });
+  document.addEventListener('click', initAudioContext, { once: true, passive: true });
+
   // 1. Home Game Selection
-  // Click Heart Game -> Open 5x5 / 4x4 Option Modal
   btnSelectHeartGame.addEventListener('click', () => {
     triggerHaptic('light');
     heartOptionModal.classList.add('active');
@@ -199,9 +228,22 @@ function init() {
     stopCardWiggleLoop();
     switchScreen('home');
   });
+
+  // 3. Reset Button -> Open Confirmation Modal Dialog
   btnReset.addEventListener('click', () => {
     triggerHaptic('light');
+    resetConfirmModal.classList.add('active');
+  });
+
+  btnConfirmResetYes.addEventListener('click', () => {
+    triggerHaptic('light');
+    resetConfirmModal.classList.remove('active');
     resetCurrentGame();
+  });
+
+  btnConfirmResetNo.addEventListener('click', () => {
+    triggerHaptic('light');
+    resetConfirmModal.classList.remove('active');
   });
 
   // Player Name Settings Modal
@@ -280,6 +322,7 @@ function switchScreen(screenName) {
     screenHome.classList.add('active');
     closeResultModal();
     heartOptionModal.classList.remove('active');
+    resetConfirmModal.classList.remove('active');
   } else {
     screenHome.classList.remove('active');
     screenPlay.classList.add('active');
@@ -298,6 +341,7 @@ function resetCurrentGame() {
   state.isGameOver = false;
   state.isProcessing = false;
   closeResultModal();
+  resetConfirmModal.classList.remove('active');
   stopCardWiggleLoop();
 
   if (state.selectedMode === 'roulette') {
@@ -367,7 +411,8 @@ function handleCardClick(card, index) {
     // WINNER: Heart found!
     state.isGameOver = true;
     stopCardWiggleLoop();
-    triggerHaptic('strong-win'); // Long & strong haptic vibration on heart win
+    triggerHaptic('strong-win');
+    triggerWinVisualHaptic(); // Huge visual celebration impact
 
     card.classList.add('revealed-heart');
     card.innerHTML = HEART_SVG;
@@ -378,8 +423,9 @@ function handleCardClick(card, index) {
       state.isProcessing = false;
     }, 650);
   } else {
-    // MISS: Smooth Fade-out & Scale-down
-    triggerHaptic('light'); // Light haptic tap on card touch
+    // MISS: Smooth Fade-out & Scale-down + Visual Haptic Bounce
+    triggerHaptic('light');
+    triggerVisualHaptic(); // Screen/grid micro bounce impact
     card.classList.add('disappeared');
     
     // Switch Turn
@@ -535,7 +581,8 @@ function spinRoulette() {
       const winningIndex = Math.floor(normalized / arc);
       const winner = state.rouletteItems[winningIndex];
 
-      triggerHaptic('strong-win'); // Long & strong haptic vibration on roulette win
+      triggerHaptic('strong-win');
+      triggerWinVisualHaptic();
       showWinnerModal(winner, 'roulette');
     }
   }

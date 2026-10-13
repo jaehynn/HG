@@ -228,7 +228,24 @@
       </div>
     </div>
 
-    <!-- Modal 3: Result Modal Dialog -->
+    <!-- Modal 3: Confirm Reset Modal Dialog -->
+    <div id="reset-confirm-modal" class="modal-backdrop">
+      <div class="modal-card">
+        <div class="modal-option-icon">
+          <svg viewBox="0 0 24 24" width="40" height="40" stroke="#FF4B55" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
+          </svg>
+        </div>
+        <h2 class="modal-title">새 게임 시작</h2>
+        <p class="modal-desc">진행 중인 판을 초기화하고<br>새로운 게임을 시작하시겠습니까?</p>
+        <div class="modal-actions">
+          <button id="btn-confirm-reset-yes" class="btn-primary" type="button">새로 시작하기</button>
+          <button id="btn-confirm-reset-no" class="btn-secondary" type="button">계속 플레이하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 4: Result Modal Dialog -->
     <div id="result-modal" class="modal-backdrop">
       <div class="modal-card">
         <div class="modal-heart-icon">
@@ -241,6 +258,7 @@
         <div class="modal-actions">
           <button id="btn-modal-retry" class="btn-primary" type="button">한 판 더 하기</button>
           <button id="btn-modal-home" class="btn-secondary" type="button">홈으로</button>
+        </div>
       </div>
     </div>
 
