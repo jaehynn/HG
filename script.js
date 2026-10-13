@@ -1,3 +1,7 @@
+// ==========================================
+// Heart Pick - Minimal Couple Game Script
+// ==========================================
+
 // State Management
 const state = {
   currentScreen: 'home', // 'home' | 'play'
@@ -80,17 +84,19 @@ function createWavDataUri(sampleRate, duration, sampleFn) {
   }
 }
 
-// Lazy Audio Generator
+// 1. Light & Cute Touch Sound (가볍고 귀여운 퐁/뽁!)
 let audioClick = null;
-let audioWin = null;
-
 function getAudioClick() {
   if (!audioClick && typeof Audio !== 'undefined') {
     try {
-      const uri = createWavDataUri(22050, 0.06, (t, dur) => {
-        const env = Math.pow(1 - t / dur, 3);
-        const freq = 320 - (240 * (t / dur));
-        return Math.sin(2 * Math.PI * freq * t) * env * 0.9;
+      const uri = createWavDataUri(22050, 0.075, (t, dur) => {
+        const attack = Math.min(1, t / 0.006);
+        const decay = Math.pow(Math.max(0, 1 - t / dur), 2.8);
+        const env = attack * decay;
+        const freq = 520 + 320 * Math.sin((t / dur) * Math.PI * 0.85);
+        const s1 = Math.sin(2 * Math.PI * freq * t);
+        const s2 = Math.sin(4 * Math.PI * freq * t) * 0.25;
+        return (s1 + s2) * env * 0.85;
       });
       if (uri) {
         audioClick = new Audio(uri);
@@ -101,16 +107,56 @@ function getAudioClick() {
   return audioClick;
 }
 
+// 2. Cute 'Heart Pyong-Pyong' Victory Sound (하트 뿅뿅! 💕 뾰로로롱~ ✨)
+let audioWin = null;
 function getAudioWin() {
   if (!audioWin && typeof Audio !== 'undefined') {
     try {
-      const uri = createWavDataUri(22050, 0.45, (t, dur) => {
-        const env = Math.pow(1 - t / dur, 1.8);
-        const s1 = Math.sin(2 * Math.PI * 523.25 * t);
-        const s2 = Math.sin(2 * Math.PI * 659.25 * t);
-        const s3 = Math.sin(2 * Math.PI * 783.99 * t);
-        const s4 = Math.sin(2 * Math.PI * 1046.50 * t);
-        return (s1 + s2 + s3 + s4) * 0.25 * env;
+      const uri = createWavDataUri(22050, 0.85, (t) => {
+        // 3단 상승 하트 뿅뿅 스쿱
+        const pyongs = [
+          { start: 0.00, end: 0.16, fStart: 540, fEnd: 1120, vol: 0.70 },
+          { start: 0.11, end: 0.29, fStart: 720, fEnd: 1420, vol: 0.75 },
+          { start: 0.22, end: 0.43, fStart: 920, fEnd: 1780, vol: 0.80 },
+        ];
+
+        let sum = 0;
+
+        for (const p of pyongs) {
+          if (t >= p.start && t < p.end) {
+            const pt = t - p.start;
+            const pdur = p.end - p.start;
+            const progress = pt / pdur;
+            const freq = p.fStart + (p.fEnd - p.fStart) * Math.pow(progress, 0.75);
+            const attack = Math.min(1, pt / 0.007);
+            const decay = Math.pow(1 - progress, 2.0);
+            const env = attack * decay;
+            const wave = Math.sin(2 * Math.PI * freq * pt) + 0.22 * Math.sin(4 * Math.PI * freq * pt);
+            sum += wave * env * p.vol;
+          }
+        }
+
+        // 반짝이는 사랑의 하트 피날레 (뾰로로롱~ ✨ C6, E6, G6, C7)
+        const blossomStart = 0.32;
+        const blossomEnd = 0.85;
+        if (t >= blossomStart && t < blossomEnd) {
+          const bt = t - blossomStart;
+          const bdur = blossomEnd - blossomStart;
+          const bprogress = bt / bdur;
+          const bAttack = Math.min(1, bt / 0.012);
+          const bDecay = Math.pow(1 - bprogress, 2.3);
+          const bEnv = bAttack * bDecay;
+          const tremolo = 1 + 0.18 * Math.sin(2 * Math.PI * 8 * bt);
+
+          const s1 = Math.sin(2 * Math.PI * 1046.50 * bt); // C6
+          const s2 = Math.sin(2 * Math.PI * 1318.51 * bt); // E6
+          const s3 = Math.sin(2 * Math.PI * 1567.98 * bt); // G6
+          const s4 = Math.sin(2 * Math.PI * 2093.00 * bt) * 0.4; // C7
+
+          sum += (s1 + s2 + s3 + s4) * 0.26 * bEnv * tremolo;
+        }
+
+        return Math.max(-1, Math.min(1, sum * 0.9));
       });
       if (uri) {
         audioWin = new Audio(uri);
@@ -140,21 +186,20 @@ function unlockiOSAudio() {
 // Play Tactile Audio
 function playTactileSound(type = 'light') {
   if (!state.soundEnabled) return;
-
   try {
     if (type === 'light') {
       const click = getAudioClick();
       if (click) {
-        const clickClone = click.cloneNode();
-        clickClone.volume = 0.8;
-        clickClone.play().catch(() => {});
+        const clone = click.cloneNode();
+        clone.volume = 0.8;
+        clone.play().catch(() => {});
       }
     } else if (type === 'strong-win') {
       const win = getAudioWin();
       if (win) {
-        const winClone = win.cloneNode();
-        winClone.volume = 0.9;
-        winClone.play().catch(() => {});
+        const clone = win.cloneNode();
+        clone.volume = 0.9;
+        clone.play().catch(() => {});
       }
     }
   } catch (e) {}
@@ -172,14 +217,6 @@ function triggerHaptic(type = 'light') {
     } catch (e) {}
   }
   playTactileSound(type);
-}
-
-// Visual Haptic Bounce on Card Grid
-function triggerVisualHaptic() {
-  if (!cardGrid) return;
-  cardGrid.classList.remove('impact-bounce');
-  void cardGrid.offsetWidth;
-  cardGrid.classList.add('impact-bounce');
 }
 
 // Big Win Visual Haptic on Screen
@@ -206,7 +243,7 @@ function toggleSound() {
   }
 }
 
-// Safe title update
+// Safe title update (방어 코드)
 function setTopTitle(text) {
   if (gameTopTitle) {
     gameTopTitle.textContent = text;
@@ -215,7 +252,6 @@ function setTopTitle(text) {
 
 // Initialize App
 function init() {
-  // DOM Cache
   screenHome = document.getElementById('screen-home');
   screenPlay = document.getElementById('screen-play');
   appContainer = document.querySelector('.app-container');
@@ -266,11 +302,9 @@ function init() {
   rouletteInput = document.getElementById('roulette-items-input');
   btnSpinRoulette = document.getElementById('btn-spin-roulette');
 
-  // Unlock audio on first interaction
   document.addEventListener('touchstart', unlockiOSAudio, { once: true, passive: true });
   document.addEventListener('click', unlockiOSAudio, { once: true, passive: true });
 
-  // Sound Toggle
   if (btnSoundToggle) {
     btnSoundToggle.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -278,7 +312,6 @@ function init() {
     });
   }
 
-  // Home Selection
   if (btnSelectHeartGame && heartOptionModal) {
     btnSelectHeartGame.addEventListener('click', () => {
       triggerHaptic('light');
@@ -318,7 +351,6 @@ function init() {
     });
   }
 
-  // Navigation
   if (btnBackHome) {
     btnBackHome.addEventListener('click', () => {
       stopCardWiggleLoop();
@@ -326,7 +358,6 @@ function init() {
     });
   }
 
-  // Reset Modal
   if (btnReset && resetConfirmModal) {
     btnReset.addEventListener('click', () => {
       triggerHaptic('light');
@@ -349,7 +380,6 @@ function init() {
     });
   }
 
-  // Player Settings Modal
   if (btnOpenPlayerModal && playerModal) {
     btnOpenPlayerModal.addEventListener('click', () => {
       triggerHaptic('light');
@@ -398,7 +428,6 @@ function init() {
     });
   }
 
-  // Result Actions
   if (btnModalRetry) {
     btnModalRetry.addEventListener('click', () => {
       triggerHaptic('light');
@@ -415,7 +444,6 @@ function init() {
     });
   }
 
-  // Roulette Events
   if (rouletteInput) {
     rouletteInput.addEventListener('input', updateRouletteItems);
   }
@@ -516,7 +544,7 @@ function setupCardGrid() {
   }
 }
 
-// Handle Card Click
+// Handle Card Click (그리드 반동 제거 & 귀여운 사운드)
 function handleCardClick(card, index) {
   if (state.isGameOver || state.isProcessing) return;
   if (card.classList.contains('disappeared') || card.classList.contains('revealed-heart')) return;
@@ -525,7 +553,7 @@ function handleCardClick(card, index) {
   card.classList.remove('wiggling');
 
   if (index === state.heartIndex) {
-    // WINNER: Heart found!
+    // WINNER: 하트 당첨 (하트 뿅뿅 사운드 + 축하 진동)
     state.isGameOver = true;
     stopCardWiggleLoop();
     triggerHaptic('strong-win');
@@ -540,9 +568,8 @@ function handleCardClick(card, index) {
       state.isProcessing = false;
     }, 650);
   } else {
-    // MISS: Fade-out & Scale-down + Bounce
+    // MISS: 꽝 (그리드 반동 없이 부드러운 개별 카드 소멸 & 퐁! 효과음)
     triggerHaptic('light');
-    triggerVisualHaptic();
     card.classList.add('disappeared');
     
     // Switch Turn
@@ -710,7 +737,7 @@ function spinRoulette() {
   requestAnimationFrame(animate);
 }
 
-// Safe Start on Load (Handles already loaded state or async execution)
+// Safe Start on Load (로드 타이밍 안전 보장)
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', init);
 } else {
