@@ -70,21 +70,94 @@ const HEART_SVG = `
   </svg>
 `;
 
-// Haptic Vibration Helper (Navigator.vibrate)
+// Hybrid Haptic Engine (Android Vibration + iOS Switch Taptic + Web Audio Sub-bass Pulse)
+let audioCtx = null;
+const iosHapticSwitch = document.getElementById('ios-haptic-trigger');
+
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (AudioContextClass) {
+      audioCtx = new AudioContextClass();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Low-frequency Sub-bass Sound Pulse that causes physical speaker resonance/haptic sensation
+function playTactileAudioPulse(type = 'light') {
+  try {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    if (type === 'light') {
+      // 55Hz short crisp pop pulse (feels like a mechanical click)
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(58, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(24, ctx.currentTime + 0.045);
+
+      gain.gain.setValueAtTime(0.7, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.045);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.046);
+    } else if (type === 'strong-win') {
+      // Triple pulsing resonance wave for grand celebration
+      [0, 0.12, 0.28].forEach((delay, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = 'triangle';
+        const startFreq = idx === 2 ? 80 : 65;
+        osc.frequency.setValueAtTime(startFreq, ctx.currentTime + delay);
+        osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + delay + 0.12);
+
+        gain.gain.setValueAtTime(0.85, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.13);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + 0.14);
+      });
+    }
+  } catch (err) {
+    // Audio context play error handled silently
+  }
+}
+
+// Master Hybrid Haptic Trigger
 function triggerHaptic(type = 'light') {
+  // 1. Android standard vibration API
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
       if (type === 'light') {
-        // Light tap feedback for card touch
-        navigator.vibrate(18);
+        navigator.vibrate(20);
       } else if (type === 'strong-win') {
-        // Long and strong pulsating vibration pattern for win
         navigator.vibrate([160, 60, 220, 60, 320]);
       }
-    } catch (e) {
-      // Ignore if user device/policy restricts vibrate
-    }
+    } catch (e) {}
   }
+
+  // 2. iOS Taptic Switch trigger
+  if (iosHapticSwitch) {
+    try {
+      iosHapticSwitch.checked = !iosHapticSwitch.checked;
+    } catch (e) {}
+  }
+
+  // 3. Web Audio Sub-bass tactile vibration (works on iOS, Safari, Kakao, Naver in-app)
+  playTactileAudioPulse(type);
 }
 
 // Initialize App
