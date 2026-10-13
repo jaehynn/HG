@@ -12,7 +12,8 @@ const state = {
   rouletteItems: ['Player 1', 'Player 2'],
   rouletteAngle: 0,
   isSpinning: false,
-  wiggleTimerId: null
+  wiggleTimerId: null,
+  soundEnabled: true
 };
 
 // DOM Elements
@@ -24,6 +25,11 @@ const btnReset = document.getElementById('btn-reset');
 const cardView = document.getElementById('card-view');
 const rouletteView = document.getElementById('roulette-view');
 const cardGrid = document.getElementById('card-grid');
+
+// Sound Toggle Elements
+const btnSoundToggle = document.getElementById('btn-sound-toggle');
+const iconSoundOn = document.getElementById('icon-sound-on');
+const iconSoundOff = document.getElementById('icon-sound-off');
 
 // Game Selection Elements
 const btnSelectHeartGame = document.getElementById('btn-select-heart-game');
@@ -76,79 +82,100 @@ const HEART_SVG = `
   </svg>
 `;
 
-// Hybrid Haptic & Audio Engine
-let audioCtx = null;
-const iosHapticSwitch = document.getElementById('ios-haptic-trigger');
+// ==========================================
+// iOS Silent-Mode Bypass HTML5 Audio Synthesizer
+// Generates PCM WAV Data-URIs so HTML5 Audio plays via iOS Playback category
+// ==========================================
+function createWavDataUri(sampleRate, duration, sampleFn) {
+  const numSamples = Math.floor(sampleRate * duration);
+  const buffer = new ArrayBuffer(44 + numSamples * 2);
+  const view = new DataView(buffer);
 
-function initAudioContext() {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
+  function writeString(offset, string) {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
     }
   }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); // Subchunk1Size
+  view.setUint16(20, 1, true);  // PCM format
+  view.setUint16(22, 1, true);  // Mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // ByteRate
+  view.setUint16(32, 2, true);  // BlockAlign
+  view.setUint16(34, 16, true); // BitsPerSample
+  writeString(36, 'data');
+  view.setUint32(40, numSamples * 2, true);
+
+  for (let i = 0; i < numSamples; i++) {
+    const t = i / sampleRate;
+    const sample = Math.max(-1, Math.min(1, sampleFn(t, duration)));
+    view.setInt16(44 + i * 2, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
   }
+
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return 'data:audio/wav;base64,' + btoa(binary);
 }
 
-// Crisp & Tactile Web Audio Click (Clearly audible on speakers when volume is on)
+// 1. Crisp Card Click Sound (Snappy 320Hz -> 80Hz pop, 0.06s)
+const CLICK_WAV_URI = createWavDataUri(22050, 0.06, (t, dur) => {
+  const env = Math.pow(1 - t / dur, 3);
+  const freq = 320 - (240 * (t / dur));
+  return Math.sin(2 * Math.PI * freq * t) * env * 0.9;
+});
+
+// 2. Win Celebratory Fanfare Sound (0.45s chord chime)
+const WIN_WAV_URI = createWavDataUri(22050, 0.45, (t, dur) => {
+  const env = Math.pow(1 - t / dur, 1.8);
+  const s1 = Math.sin(2 * Math.PI * 523.25 * t); // C5
+  const s2 = Math.sin(2 * Math.PI * 659.25 * t); // E5
+  const s3 = Math.sin(2 * Math.PI * 783.99 * t); // G5
+  const s4 = Math.sin(2 * Math.PI * 1046.50 * t); // C6
+  return (s1 + s2 + s3 + s4) * 0.25 * env;
+});
+
+// Preload HTML5 Audio objects
+const audioClick = new Audio(CLICK_WAV_URI);
+const audioWin = new Audio(WIN_WAV_URI);
+audioClick.preload = 'auto';
+audioWin.preload = 'auto';
+
+// Unlock iOS Audio Pipeline on user action
+function unlockiOSAudio() {
+  audioClick.play().then(() => {
+    audioClick.pause();
+    audioClick.currentTime = 0;
+  }).catch(() => {});
+}
+
+// Play HTML5 Tactile Audio (Bypasses iOS hardware silent switch if media volume > 0)
 function playTactileSound(type = 'light') {
+  if (!state.soundEnabled) return;
+
   try {
-    initAudioContext();
-    if (!audioCtx) return;
-
     if (type === 'light') {
-      // Mechanical snappy click & tactile pop sound (High clarity, resonant frequency)
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(260, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.05);
-
-      gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(audioCtx.currentTime);
-      osc.stop(audioCtx.currentTime + 0.052);
+      const clickClone = audioClick.cloneNode();
+      clickClone.volume = 0.8;
+      clickClone.play().catch(() => {});
     } else if (type === 'strong-win') {
-      // Celebratory fan-fare chime + power bass drops
-      const notes = [
-        { freq: 440, delay: 0 },
-        { freq: 554.37, delay: 0.1 },
-        { freq: 659.25, delay: 0.2 },
-        { freq: 880, delay: 0.32 }
-      ];
-
-      notes.forEach(({ freq, delay }) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
-
-        gain.gain.setValueAtTime(0.4, audioCtx.currentTime + delay);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + 0.35);
-
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        osc.start(audioCtx.currentTime + delay);
-        osc.stop(audioCtx.currentTime + delay + 0.36);
-      });
+      const winClone = audioWin.cloneNode();
+      winClone.volume = 0.9;
+      winClone.play().catch(() => {});
     }
-  } catch (err) {
-    // Silently continue if audio error occurs
-  }
+  } catch (e) {}
 }
 
-// Master Haptic Trigger (Visual Haptic + Android Vibrate + iOS Switch + Web Audio)
+// Master Haptic & Sound Trigger
 function triggerHaptic(type = 'light') {
-  // 1. Android standard vibration API
+  // 1. Android standard vibration
   if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
     try {
       if (type === 'light') {
@@ -159,14 +186,7 @@ function triggerHaptic(type = 'light') {
     } catch (e) {}
   }
 
-  // 2. iOS Taptic Switch trigger
-  if (iosHapticSwitch) {
-    try {
-      iosHapticSwitch.checked = !iosHapticSwitch.checked;
-    } catch (e) {}
-  }
-
-  // 3. Web Audio Crisp Tactile Sound
+  // 2. Play HTML5 Audio (Silent Switch Bypass)
   playTactileSound(type);
 }
 
@@ -174,7 +194,7 @@ function triggerHaptic(type = 'light') {
 function triggerVisualHaptic() {
   if (!cardGrid) return;
   cardGrid.classList.remove('impact-bounce');
-  void cardGrid.offsetWidth; // Force reflow
+  void cardGrid.offsetWidth;
   cardGrid.classList.add('impact-bounce');
 }
 
@@ -186,11 +206,31 @@ function triggerWinVisualHaptic() {
   appContainer.classList.add('win-shake');
 }
 
+// Sound Toggle Update UI
+function toggleSound() {
+  state.soundEnabled = !state.soundEnabled;
+  if (state.soundEnabled) {
+    iconSoundOn.style.display = 'block';
+    iconSoundOff.style.display = 'none';
+    unlockiOSAudio();
+    playTactileSound('light');
+  } else {
+    iconSoundOn.style.display = 'none';
+    iconSoundOff.style.display = 'block';
+  }
+}
+
 // Initialize App
 function init() {
-  // Unlock audio on first touch interaction
-  document.addEventListener('touchstart', initAudioContext, { once: true, passive: true });
-  document.addEventListener('click', initAudioContext, { once: true, passive: true });
+  // Unlock iOS Media audio on first user touch
+  document.addEventListener('touchstart', unlockiOSAudio, { once: true, passive: true });
+  document.addEventListener('click', unlockiOSAudio, { once: true, passive: true });
+
+  // Sound Toggle Button
+  btnSoundToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleSound();
+  });
 
   // 1. Home Game Selection
   btnSelectHeartGame.addEventListener('click', () => {
@@ -412,7 +452,7 @@ function handleCardClick(card, index) {
     state.isGameOver = true;
     stopCardWiggleLoop();
     triggerHaptic('strong-win');
-    triggerWinVisualHaptic(); // Huge visual celebration impact
+    triggerWinVisualHaptic();
 
     card.classList.add('revealed-heart');
     card.innerHTML = HEART_SVG;
@@ -425,7 +465,7 @@ function handleCardClick(card, index) {
   } else {
     // MISS: Smooth Fade-out & Scale-down + Visual Haptic Bounce
     triggerHaptic('light');
-    triggerVisualHaptic(); // Screen/grid micro bounce impact
+    triggerVisualHaptic();
     card.classList.add('disappeared');
     
     // Switch Turn
