@@ -1,0 +1,656 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+body {
+  font-family: var(--font-family-base);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-main);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+/* App Centered Container (Mobile-first frame) */
+.app-container {
+  width: 100%;
+  max-width: 420px;
+  min-height: 100vh;
+  background-color: var(--color-bg-base);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: env(safe-area-inset-top, 16px) 20px env(safe-area-inset-bottom, 20px);
+}
+
+/* Screen Management */
+.screen {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  width: 100%;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Screen 1: Home View */
+.home-header {
+  padding-top: 32px;
+  padding-bottom: 20px;
+  text-align: center;
+}
+
+.heart-brand-icon {
+  color: var(--color-accent-heart);
+  display: inline-flex;
+  margin-bottom: 12px;
+  animation: floatHeart 2.4s ease-in-out infinite;
+}
+
+@keyframes floatHeart {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.05); }
+}
+
+.brand-title {
+  font-size: var(--font-size-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--color-text-main);
+  margin-bottom: 6px;
+}
+
+.brand-subtitle {
+  font-size: var(--font-size-caption);
+  color: var(--color-text-sub);
+  line-height: 1.4;
+}
+
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+/* Player Edit Button on Home */
+.btn-player-edit {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-btn);
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.btn-player-edit:active {
+  transform: scale(0.98);
+  background-color: #F8F6F2;
+}
+
+.player-names-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.p-vs {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  background: var(--color-bg-base);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.p-name.p1-label {
+  color: var(--color-accent-heart);
+}
+
+.p-name.p2-label {
+  color: var(--color-text-main);
+}
+
+.btn-edit-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+}
+
+.mode-selector-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-left: 2px;
+}
+
+.mode-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mode-card {
+  background: var(--color-bg-surface);
+  border: 2px solid transparent;
+  border-radius: var(--radius-btn);
+  padding: 16px 18px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+.mode-card:active {
+  transform: scale(0.98);
+}
+
+.mode-card.active {
+  border-color: var(--color-text-main);
+  background: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(45, 42, 38, 0.08);
+}
+
+.mode-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.mode-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.mode-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-sub);
+}
+
+.mode-card.active .mode-tag {
+  background-color: var(--color-text-main);
+  color: #FFFFFF;
+}
+
+.mode-desc {
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.btn-primary {
+  background-color: var(--color-text-main);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  margin-top: 4px;
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background-color: var(--color-card-base);
+  color: var(--color-text-main);
+  border: none;
+  border-radius: var(--radius-btn);
+  padding: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-secondary:active {
+  background-color: var(--color-card-hover);
+}
+
+.home-footer {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-sub);
+  padding: 16px 0 8px;
+}
+
+/* Screen 2: Play Screen Header (Minimal GNB) */
+.play-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 12px;
+  min-height: 48px;
+}
+
+.game-top-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  letter-spacing: -0.01em;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--color-text-main);
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+}
+
+.btn-icon:active {
+  background-color: var(--color-border-subtle);
+}
+
+/* Turn Section (Standalone, Larger & Minimal Section above Card UI) */
+.turn-section {
+  width: 100%;
+  margin: 8px 0 28px; /* Clean generous spacing from cards */
+}
+
+.turn-card-banner {
+  background: var(--color-bg-surface);
+  border: 1px solid rgba(235, 229, 220, 0.8);
+  border-radius: 20px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 4px 14px rgba(60, 50, 40, 0.04);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.turn-chip {
+  background-color: var(--color-accent-heart);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 12px;
+  letter-spacing: 0.02em;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.turn-card-banner.p2 .turn-chip {
+  background-color: var(--color-text-main);
+}
+
+.turn-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.turn-sub-guide {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.turn-main-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-main);
+  letter-spacing: -0.02em;
+  transition: color 0.2s ease;
+}
+
+.turn-pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--color-accent-heart);
+  animation: pulseDot 1.6s ease-in-out infinite;
+}
+
+.turn-card-banner.p2 .turn-pulse-dot {
+  background-color: var(--color-text-main);
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.3; }
+}
+
+/* Play Stage */
+.play-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+}
+
+.game-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Card Grid */
+.card-grid {
+  display: grid;
+  width: 100%;
+  max-width: 380px;
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
+}
+
+.card-grid.grid-5x5 {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.card-grid.grid-4x4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+/* Individual Card (iOS Corner Smoothing & Squircle Simulation) */
+.card-item {
+  background-color: var(--color-card-base);
+  border-radius: var(--radius-card);
+  corner-shape: squircle; /* Modern CSS standard corner-shape */
+  aspect-ratio: 1 / 1;
+  cursor: pointer;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.12s ease, background-color 0.15s ease, opacity var(--duration-fade) var(--ease-smooth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.card-grid.grid-5x5 .card-item {
+  border-radius: var(--radius-card-sm);
+  corner-shape: squircle;
+}
+
+.card-item:hover {
+  background-color: var(--color-card-hover);
+}
+
+.card-item:active {
+  transform: scale(0.92);
+}
+
+/* Random Card Wiggle / Vibration Animation */
+@keyframes cardMicroWiggle {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  20% { transform: translate(-1.5px, 0.5px) rotate(-1.2deg); }
+  40% { transform: translate(1.5px, -1px) rotate(1.2deg); }
+  60% { transform: translate(-1px, -0.5px) rotate(-0.8deg); }
+  80% { transform: translate(1px, 0.5px) rotate(0.6deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+
+.card-item.wiggling {
+  animation: cardMicroWiggle 0.42s ease-in-out;
+}
+
+/* Card Disappear (Miss) */
+.card-item.disappeared {
+  transform: scale(0.65);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Heart Hit Card */
+.card-item.revealed-heart {
+  background-color: #FFFFFF;
+  box-shadow: 0 6px 20px rgba(255, 75, 85, 0.28);
+  animation: heartCardPop 0.45s var(--ease-spring) forwards;
+  pointer-events: none;
+}
+
+.card-item.revealed-heart svg {
+  color: var(--color-accent-heart);
+  animation: heartBeat 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes heartCardPop {
+  0% { transform: scale(0.8); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heartBeat {
+  0% { transform: scale(0.95); }
+  100% { transform: scale(1.1); }
+}
+
+/* Roulette View */
+.roulette-container {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#roulette-canvas {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.roulette-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-top: 20px solid var(--color-accent-heart);
+  z-index: 10;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+.roulette-center-pin {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-bg-surface);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 5;
+}
+
+.roulette-inputs-section {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 16px;
+}
+
+.roulette-inputs-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+  margin-bottom: 6px;
+}
+
+.roulette-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-btn);
+  background: var(--color-bg-surface);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-text-main);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.roulette-input:focus {
+  border-color: var(--color-text-main);
+}
+
+#btn-spin-roulette {
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Player Settings Input Group in Modal */
+.player-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.input-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-sub);
+}
+
+.input-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 14px;
+  background: var(--color-bg-base);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--color-text-main);
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.input-field input:focus {
+  border-color: var(--color-text-main);
+  background: #FFFFFF;
+}
+
+/* Modal Dialog */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgba(45, 42, 38, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 100;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 340px;
+  background-color: var(--color-bg-surface);
+  border-radius: var(--radius-modal);
+  padding: 30px 24px 22px;
+  text-align: center;
+  box-shadow: var(--shadow-modal);
+  transform: translateY(20px) scale(0.96);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.modal-backdrop.active .modal-card {
+  transform: translateY(0) scale(1);
+}
+
+.modal-heart-icon {
+  color: var(--color-accent-heart);
+  margin-bottom: 16px;
+  animation: heartBounce 0.6s var(--ease-spring) infinite alternate;
+}
+
+@keyframes heartBounce {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(-6px) scale(1.1); }
+}
+
+.modal-title {
+  font-size: var(--font-size-headline);
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 6px;
+}
+
+.modal-desc {
+  font-size: var(--font-size-body);
+  color: var(--color-text-sub);
+  margin-bottom: 24px;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
