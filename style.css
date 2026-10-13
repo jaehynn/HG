@@ -89,6 +89,22 @@ body {
   padding: 8px 0;
 }
 
+/* Home Section Group & Titles */
+.home-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding-left: 2px;
+}
+
 /* 1. Prominent Player Setup Card (Induces first-step name setting) */
 .player-setup-card {
   background: var(--color-bg-surface);
@@ -106,36 +122,12 @@ body {
   border-color: #DDD4C7;
 }
 
-.player-setup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.player-setup-tag {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--color-text-sub);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.player-setup-action {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-accent-heart);
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-
 .player-names-display {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .player-pill {
@@ -179,27 +171,27 @@ body {
   letter-spacing: 0.05em;
 }
 
-.player-setup-hint {
-  font-size: 11px;
-  color: var(--color-text-sub);
-  text-align: center;
-  margin-top: 2px;
-}
-
-/* 2. Game Selection (Square Cards with 3D Icons) */
-.game-select-section {
+.player-setup-footer {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
 }
 
-.section-title {
-  font-size: 13px;
-  font-weight: 700;
+.player-setup-hint {
+  font-size: 11.5px;
   color: var(--color-text-sub);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding-left: 2px;
+}
+
+.player-setup-action {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-accent-heart);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .game-square-grid {

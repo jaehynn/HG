@@ -70,21 +70,41 @@ const HEART_SVG = `
   </svg>
 `;
 
+// Haptic Vibration Helper (Navigator.vibrate)
+function triggerHaptic(type = 'light') {
+  if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+    try {
+      if (type === 'light') {
+        // Light tap feedback for card touch
+        navigator.vibrate(18);
+      } else if (type === 'strong-win') {
+        // Long and strong pulsating vibration pattern for win
+        navigator.vibrate([160, 60, 220, 60, 320]);
+      }
+    } catch (e) {
+      // Ignore if user device/policy restricts vibrate
+    }
+  }
+}
+
 // Initialize App
 function init() {
   // 1. Home Game Selection
   // Click Heart Game -> Open 5x5 / 4x4 Option Modal
   btnSelectHeartGame.addEventListener('click', () => {
+    triggerHaptic('light');
     heartOptionModal.classList.add('active');
   });
 
   btnOpt5x5.addEventListener('click', () => {
+    triggerHaptic('light');
     state.selectedMode = '5x5';
     heartOptionModal.classList.remove('active');
     startGame();
   });
 
   btnOpt4x4.addEventListener('click', () => {
+    triggerHaptic('light');
     state.selectedMode = '4x4';
     heartOptionModal.classList.remove('active');
     startGame();
@@ -96,6 +116,7 @@ function init() {
 
   // Click Roulette Game -> Start Directly
   btnSelectRouletteGame.addEventListener('click', () => {
+    triggerHaptic('light');
     state.selectedMode = 'roulette';
     startGame();
   });
@@ -105,16 +126,44 @@ function init() {
     stopCardWiggleLoop();
     switchScreen('home');
   });
-  btnReset.addEventListener('click', resetCurrentGame);
+  btnReset.addEventListener('click', () => {
+    triggerHaptic('light');
+    resetCurrentGame();
+  });
 
   // Player Name Settings Modal
   btnOpenPlayerModal.addEventListener('click', () => {
+    triggerHaptic('light');
     inputP1Name.value = state.player1Name;
     inputP2Name.value = state.player2Name;
     playerModal.classList.add('active');
   });
 
+  // Auto clear / select placeholder when focused
+  inputP1Name.addEventListener('focus', function() {
+    if (this.value === 'Player 1') {
+      this.value = '';
+    }
+  });
+  inputP1Name.addEventListener('blur', function() {
+    if (!this.value.trim()) {
+      this.value = 'Player 1';
+    }
+  });
+
+  inputP2Name.addEventListener('focus', function() {
+    if (this.value === 'Player 2') {
+      this.value = '';
+    }
+  });
+  inputP2Name.addEventListener('blur', function() {
+    if (!this.value.trim()) {
+      this.value = 'Player 2';
+    }
+  });
+
   btnSavePlayers.addEventListener('click', () => {
+    triggerHaptic('light');
     const p1 = inputP1Name.value.trim() || 'Player 1';
     const p2 = inputP2Name.value.trim() || 'Player 2';
     state.player1Name = p1;
@@ -132,6 +181,7 @@ function init() {
 
   // Modal Actions
   btnModalRetry.addEventListener('click', () => {
+    triggerHaptic('light');
     closeResultModal();
     resetCurrentGame();
   });
@@ -143,7 +193,10 @@ function init() {
 
   // Roulette Events
   rouletteInput.addEventListener('input', updateRouletteItems);
-  btnSpinRoulette.addEventListener('click', spinRoulette);
+  btnSpinRoulette.addEventListener('click', () => {
+    triggerHaptic('light');
+    spinRoulette();
+  });
 }
 
 // Screen Switcher
@@ -241,6 +294,8 @@ function handleCardClick(card, index) {
     // WINNER: Heart found!
     state.isGameOver = true;
     stopCardWiggleLoop();
+    triggerHaptic('strong-win'); // Long & strong haptic vibration on heart win
+
     card.classList.add('revealed-heart');
     card.innerHTML = HEART_SVG;
 
@@ -251,6 +306,7 @@ function handleCardClick(card, index) {
     }, 650);
   } else {
     // MISS: Smooth Fade-out & Scale-down
+    triggerHaptic('light'); // Light haptic tap on card touch
     card.classList.add('disappeared');
     
     // Switch Turn
@@ -406,6 +462,7 @@ function spinRoulette() {
       const winningIndex = Math.floor(normalized / arc);
       const winner = state.rouletteItems[winningIndex];
 
+      triggerHaptic('strong-win'); // Long & strong haptic vibration on roulette win
       showWinnerModal(winner, 'roulette');
     }
   }

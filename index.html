@@ -22,33 +22,35 @@
       </header>
 
       <main class="home-main">
-        <!-- 1. Prominent Player Name Setup (Top Priority Induction) -->
-        <div class="player-setup-card" id="btn-open-player-modal" role="button" tabindex="0">
-          <div class="player-setup-header">
-            <span class="player-setup-tag">플레이어 설정</span>
-            <span class="player-setup-action">
-              변경
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
-            </span>
-          </div>
-          <div class="player-names-display">
-            <div class="player-pill p1-pill">
-              <span class="pill-dot"></span>
-              <span class="pill-name" id="preview-p1">Player 1</span>
+        <!-- 1. Player Setup Section (Title outside button, consistent with Game Selection) -->
+        <div class="home-section-group">
+          <div class="section-title">플레이어 설정</div>
+          <div class="player-setup-card" id="btn-open-player-modal" role="button" tabindex="0">
+            <div class="player-names-display">
+              <div class="player-pill p1-pill">
+                <span class="pill-dot"></span>
+                <span class="pill-name" id="preview-p1">Player 1</span>
+              </div>
+              <span class="vs-text">VS</span>
+              <div class="player-pill p2-pill">
+                <span class="pill-dot"></span>
+                <span class="pill-name" id="preview-p2">Player 2</span>
+              </div>
             </div>
-            <span class="vs-text">VS</span>
-            <div class="player-pill p2-pill">
-              <span class="pill-dot"></span>
-              <span class="pill-name" id="preview-p2">Player 2</span>
+            <div class="player-setup-footer">
+              <span class="player-setup-hint">터치해서 둘만의 애칭이나 이름을 변경해보세요</span>
+              <span class="player-setup-action">
+                변경
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </span>
             </div>
           </div>
-          <p class="player-setup-hint">터치해서 둘만의 애칭이나 이름을 먼저 설정해보세요</p>
         </div>
 
         <!-- 2. Game Selection (Square Cards with 3D Icons) -->
-        <div class="game-select-section">
+        <div class="home-section-group">
           <div class="section-title">게임 선택</div>
           <div class="game-square-grid">
             <!-- Game 1: Heart Game -->
